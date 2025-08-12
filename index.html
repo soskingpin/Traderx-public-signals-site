@@ -828,10 +828,175 @@
             const backFromInnbucks = document.getElementById('backFromInnbucks');
             const packageCards = document.querySelectorAll('.package-card');
             
-            // Always show token section on page load
-            showTokenSection();
+            // Initialize token system
+            initTokenSystem();
             
-            // Generate random particles for background
+            function initTokenSystem() {
+                // Always show token section on page load
+                showTokenSection();
+                
+                // Check token validity immediately
+                checkTokenValidity();
+                
+                // Set up periodic token checks
+                setupTokenCheckIntervals();
+                
+                // Set up storage event listener
+                setupStorageEventListener();
+                
+                // Set up all UI interactions
+                setupUIInteractions();
+            }
+            
+            function setupStorageEventListener() {
+                // This is the critical fix - listen for storage changes across tabs
+                window.addEventListener('storage', function(e) {
+                    console.log('Storage event detected:', e.key, 'old:', e.oldValue, 'new:', e.newValue);
+                    
+                    // If token changes, force immediate re-entry
+                    if (e.key === 'signalsToken' && e.oldValue !== e.newValue) {
+                        console.log('Token changed detected from another tab');
+                        // Force immediate logout
+                        forceLogout();
+                    }
+                    
+                    // If signals change, update them
+                    if (e.key === 'tradingSignals' && !signalsContainer.classList.contains('hidden')) {
+                        loadSignals();
+                    }
+                });
+            }
+            
+            function forceLogout() {
+                // Clear all token information
+                localStorage.removeItem('currentToken');
+                localStorage.removeItem('tokenTimestamp');
+                
+                // Show session expired message
+                if (!tokenSection.classList.contains('hidden')) {
+                    showSessionExpired();
+                    showError('Token has been updated by admin. Please enter the new token.');
+                }
+                
+                // Force refresh to ensure complete logout
+                setTimeout(() => {
+                    location.reload();
+                }, 100);
+            }
+            
+            function setupTokenCheckIntervals() {
+                // Check token validity every 5 seconds (more frequent)
+                setInterval(function() {
+                    const isValid = checkTokenValidity();
+                    if (!isValid && !tokenSection.classList.contains('hidden') && !sessionExpired.classList.contains('hidden')) {
+                        forceLogout();
+                    }
+                }, 5000);
+            }
+            
+            function setupUIInteractions() {
+                tokenSubmit.addEventListener('click', function() {
+                    const token = tokenInput.value.trim();
+                    const storedToken = localStorage.getItem('signalsToken') || '12345';
+                    
+                    if (token === storedToken) {
+                        // Store token with timestamp for session management
+                        localStorage.setItem('currentToken', token);
+                        localStorage.setItem('tokenTimestamp', Date.now());
+                        
+                        // Record user login (for admin panel)
+                        recordUserLogin();
+                        
+                        // Show signals
+                        showSignals();
+                    } else {
+                        showError('Wrong token ID! Contact us for a valid token.');
+                        tokenInput.value = '';
+                        tokenInput.focus();
+                    }
+                });
+                
+                tokenInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        tokenSubmit.click();
+                    }
+                });
+                
+                renewSessionBtn.addEventListener('click', function() {
+                    showTokenSection();
+                });
+                
+                refreshBtn.addEventListener('click', function() {
+                    // Check if token has expired
+                    if (!checkTokenValidity()) {
+                        forceLogout();
+                        return;
+                    }
+                    
+                    loadSignals();
+                    this.innerHTML = '<i class="fas fa-sync-alt"></i> Refreshed!';
+                    setTimeout(() => {
+                        refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
+                    }, 2000);
+                });
+                
+                // Payment methods handling
+                ecocashCard.addEventListener('click', function() {
+                    ecocashPackages.style.display = 'grid';
+                    innbucksPackages.style.display = 'none';
+                    tokenSection.style.maxHeight = '1200px';
+                    tokenSection.style.overflow = 'visible';
+                });
+                
+                innbucksCard.addEventListener('click', function() {
+                    innbucksPackages.style.display = 'grid';
+                    ecocashPackages.style.display = 'none';
+                    tokenSection.style.maxHeight = '1200px';
+                    tokenSection.style.overflow = 'visible';
+                });
+                
+                backFromEcoCash.addEventListener('click', function() {
+                    ecocashPackages.style.display = 'none';
+                    tokenSection.style.maxHeight = '600px';
+                });
+                
+                backFromInnbucks.addEventListener('click', function() {
+                    innbucksPackages.style.display = 'none';
+                    tokenSection.style.maxHeight = '600px';
+                });
+                
+                // Package selection
+                packageCards.forEach(card => {
+                    card.addEventListener('click', function() {
+                        const amount = this.getAttribute('data-amount');
+                        const packageName = this.getAttribute('data-package');
+                        
+                        // For EcoCash
+                        if (this.closest('#ecocashPackages')) {
+                            ecocashCode.textContent = `*153*1*1*0778652739*${amount}#`;
+                            ecocashUssd.style.display = 'block';
+                            
+                            // Update WhatsApp message
+                            const whatsappLink = document.querySelector('#ecocashInstructions .whatsapp-btn');
+                            whatsappLink.href = `https://wa.me/263778652739?text=Hello%20TraderX%2C%20I%20have%20paid%20for%20${packageName}%20package%20(%24${amount})%20via%20EcoCash.%20Please%20provide%20my%20token.`;
+                            
+                            document.getElementById('ecocashInstructions').style.display = 'block';
+                        }
+                    });
+                });
+                
+                // Copy USSD code
+                copyEcoCash.addEventListener('click', function() {
+                    const code = ecocashCode.textContent;
+                    navigator.clipboard.writeText(code).then(() => {
+                        this.textContent = 'Copied!';
+                        setTimeout(() => {
+                            this.textContent = 'Copy Code';
+                        }, 2000);
+                    });
+                });
+            }
+            
             function createParticles() {
                 const particles = document.getElementById('particles');
                 const particleCount = 30;
@@ -892,55 +1057,36 @@
                 }, 5000);
             }
             
-            tokenSubmit.addEventListener('click', function() {
-                const token = tokenInput.value.trim();
+            function checkTokenValidity() {
+                const token = localStorage.getItem('currentToken');
+                const tokenTimestamp = localStorage.getItem('tokenTimestamp');
                 const storedToken = localStorage.getItem('signalsToken') || '12345';
                 
-                if (token === storedToken) {
-                    // Store token with timestamp for session management
-                    localStorage.setItem('currentToken', token);
-                    localStorage.setItem('tokenTimestamp', Date.now());
-                    
-                    // Record user login (for admin panel)
-                    recordUserLogin();
-                    
-                    // Show signals
-                    showSignals();
-                } else {
-                    showError('Wrong token ID! Contact us for a valid token.');
-                    tokenInput.value = '';
-                    tokenInput.focus();
-                }
-            });
-            
-            tokenInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    tokenSubmit.click();
-                }
-            });
-            
-            renewSessionBtn.addEventListener('click', function() {
-                showTokenSection();
-            });
-            
-            refreshBtn.addEventListener('click', function() {
-                // Check if token has expired
-                if (!checkTokenValidity()) {
-                    showSessionExpired();
-                    return;
+                // If no token, show token section
+                if (!token) {
+                    console.log('No token found');
+                    return false;
                 }
                 
-                loadSignals();
-                this.innerHTML = '<i class="fas fa-sync-alt"></i> Refreshed!';
-                setTimeout(() => {
-                    refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
-                }, 2000);
-            });
+                // If token expired (5 minutes timeout), show token section
+                if (!tokenTimestamp || (Date.now() - tokenTimestamp > 300000)) {
+                    console.log('Token expired due to time');
+                    return false;
+                }
+                
+                // Verify token matches current admin token
+                if (token !== storedToken) {
+                    console.log('Token mismatch', token, '!=', storedToken);
+                    return false;
+                }
+                
+                return true;
+            }
             
             function loadSignals() {
                 // Verify token is still valid before loading signals
                 if (!checkTokenValidity()) {
-                    showSessionExpired();
+                    forceLogout();
                     return;
                 }
                 
@@ -971,81 +1117,6 @@
                     `;
                     signalsBody.appendChild(row);
                 });
-            }
-            
-            // Payment methods handling
-            ecocashCard.addEventListener('click', function() {
-                ecocashPackages.style.display = 'grid';
-                innbucksPackages.style.display = 'none';
-                tokenSection.style.maxHeight = '1200px';
-                tokenSection.style.overflow = 'visible';
-            });
-            
-            innbucksCard.addEventListener('click', function() {
-                innbucksPackages.style.display = 'grid';
-                ecocashPackages.style.display = 'none';
-                tokenSection.style.maxHeight = '1200px';
-                tokenSection.style.overflow = 'visible';
-            });
-            
-            backFromEcoCash.addEventListener('click', function() {
-                ecocashPackages.style.display = 'none';
-                tokenSection.style.maxHeight = '600px';
-            });
-            
-            backFromInnbucks.addEventListener('click', function() {
-                innbucksPackages.style.display = 'none';
-                tokenSection.style.maxHeight = '600px';
-            });
-            
-            // Package selection
-            packageCards.forEach(card => {
-                card.addEventListener('click', function() {
-                    const amount = this.getAttribute('data-amount');
-                    const packageName = this.getAttribute('data-package');
-                    
-                    // For EcoCash
-                    if (this.closest('#ecocashPackages')) {
-                        ecocashCode.textContent = `*153*1*1*0778652739*${amount}#`;
-                        ecocashUssd.style.display = 'block';
-                        
-                        // Update WhatsApp message
-                        const whatsappLink = document.querySelector('#ecocashInstructions .whatsapp-btn');
-                        whatsappLink.href = `https://wa.me/263778652739?text=Hello%20TraderX%2C%20I%20have%20paid%20for%20${packageName}%20package%20(%24${amount})%20via%20EcoCash.%20Please%20provide%20my%20token.`;
-                        
-                        document.getElementById('ecocashInstructions').style.display = 'block';
-                    }
-                });
-            });
-            
-            // Copy USSD code
-            copyEcoCash.addEventListener('click', function() {
-                const code = ecocashCode.textContent;
-                navigator.clipboard.writeText(code).then(() => {
-                    this.textContent = 'Copied!';
-                    setTimeout(() => {
-                        this.textContent = 'Copy Code';
-                    }, 2000);
-                });
-            });
-            
-            function checkTokenValidity() {
-                const token = localStorage.getItem('currentToken');
-                const currentToken = localStorage.getItem('signalsToken') || '12345';
-                const tokenTimestamp = localStorage.getItem('tokenTimestamp');
-                
-                // If no token or token expired (5 minutes timeout), show token section
-                if (!token || !tokenTimestamp || (Date.now() - tokenTimestamp > 300000)) {
-                    return false;
-                }
-                
-                // Verify token matches current admin token
-                const storedToken = localStorage.getItem('signalsToken') || '12345';
-                if (token !== storedToken) {
-                    return false;
-                }
-                
-                return true;
             }
             
             // Record user login for admin tracking
@@ -1089,44 +1160,6 @@
                 
                 localStorage.setItem('traderxUsers', JSON.stringify(users));
             }
-            
-            // Listen for storage changes (when admin updates signals)
-            window.addEventListener('storage', function(e) {
-                if (e.key === 'tradingSignals' && !signalsContainer.classList.contains('hidden')) {
-                    loadSignals();
-                }
-                
-                // If token changes, force re-entry
-                if (e.key === 'signalsToken' && !tokenSection.classList.contains('hidden')) {
-                    showError('Token has been updated by admin. Please enter the new token.');
-                    showTokenSection();
-                }
-            });
-            
-            // Check for session expiration periodically
-            setInterval(function() {
-                if (!tokenSection.classList.contains('hidden') && !sessionExpired.classList.contains('hidden')) {
-                    return; // Already showing token section
-                }
-                
-                if (!checkTokenValidity()) {
-                    showSessionExpired();
-                }
-            }, 30000); // Check every 30 seconds
-            
-            // Handle page visibility changes (when user switches tabs)
-            document.addEventListener('visibilitychange', function() {
-                if (document.visibilityState === 'hidden') {
-                    // Store timestamp when user leaves the page
-                    localStorage.setItem('lastVisible', Date.now());
-                } else if (document.visibilityState === 'visible') {
-                    // Check if user was away for more than 5 minutes
-                    const lastVisible = localStorage.getItem('lastVisible');
-                    if (lastVisible && (Date.now() - lastVisible > 300000)) {
-                        showSessionExpired();
-                    }
-                }
-            });
         });
     </script>
 </body>
