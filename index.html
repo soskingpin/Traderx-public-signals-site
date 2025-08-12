@@ -832,66 +832,51 @@
             initTokenSystem();
             
             function initTokenSystem() {
-                // Always show token section on page load
-                showTokenSection();
+                // Initialize token version only if not already set
+                if (!localStorage.getItem('currentTokenVersion')) {
+                    const tokenVersion = localStorage.getItem('tokenVersion') || '0';
+                    localStorage.setItem('currentTokenVersion', tokenVersion);
+                }
                 
                 // Check token validity immediately
-                checkTokenValidity();
+                const isValid = checkTokenValidity();
                 
-                // Set up periodic token checks
-                setupTokenCheckIntervals();
+                if (isValid) {
+                    showSignals();
+                } else {
+                    showTokenSection();
+                }
                 
                 // Set up storage event listener
                 setupStorageEventListener();
                 
-                // Set up all UI interactions
+                // Set up UI interactions
                 setupUIInteractions();
             }
             
             function setupStorageEventListener() {
-                // This is the critical fix - listen for storage changes across tabs
+                // Listen for token version changes
                 window.addEventListener('storage', function(e) {
-                    console.log('Storage event detected:', e.key, 'old:', e.oldValue, 'new:', e.newValue);
-                    
-                    // If token changes, force immediate re-entry
-                    if (e.key === 'signalsToken' && e.oldValue !== e.newValue) {
-                        console.log('Token changed detected from another tab');
-                        // Force immediate logout
-                        forceLogout();
-                    }
-                    
-                    // If signals change, update them
-                    if (e.key === 'tradingSignals' && !signalsContainer.classList.contains('hidden')) {
-                        loadSignals();
+                    if (e.key === 'tokenVersion') {
+                        const currentTokenVersion = localStorage.getItem('currentTokenVersion');
+                        
+                        // If token version changed, force logout
+                        if (e.newValue !== currentTokenVersion) {
+                            localStorage.setItem('currentTokenVersion', e.newValue);
+                            forceLogout();
+                        }
                     }
                 });
             }
             
             function forceLogout() {
-                // Clear all token information
+                // Clear current token to force re-entry
                 localStorage.removeItem('currentToken');
                 localStorage.removeItem('tokenTimestamp');
                 
                 // Show session expired message
-                if (!tokenSection.classList.contains('hidden')) {
-                    showSessionExpired();
-                    showError('Token has been updated by admin. Please enter the new token.');
-                }
-                
-                // Force refresh to ensure complete logout
-                setTimeout(() => {
-                    location.reload();
-                }, 100);
-            }
-            
-            function setupTokenCheckIntervals() {
-                // Check token validity every 5 seconds (more frequent)
-                setInterval(function() {
-                    const isValid = checkTokenValidity();
-                    if (!isValid && !tokenSection.classList.contains('hidden') && !sessionExpired.classList.contains('hidden')) {
-                        forceLogout();
-                    }
-                }, 5000);
+                showSessionExpired();
+                showError('Token has been updated by admin. Please enter the new token.');
             }
             
             function setupUIInteractions() {
@@ -1064,19 +1049,16 @@
                 
                 // If no token, show token section
                 if (!token) {
-                    console.log('No token found');
                     return false;
                 }
                 
                 // If token expired (5 minutes timeout), show token section
                 if (!tokenTimestamp || (Date.now() - tokenTimestamp > 300000)) {
-                    console.log('Token expired due to time');
                     return false;
                 }
                 
                 // Verify token matches current admin token
                 if (token !== storedToken) {
-                    console.log('Token mismatch', token, '!=', storedToken);
                     return false;
                 }
                 
