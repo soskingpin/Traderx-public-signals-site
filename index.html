@@ -823,25 +823,7 @@
         <p>© 2023 TraderX Signals - All rights reserved</p>
     </div>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-    
     <script>
-        // Your web app's Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyBgbaNwHsDyLP2uatciYP7NTfyPAnC6xw4",
-            authDomain: "traderx-signals-new.firebaseapp.com",
-            projectId: "traderx-signals-new",
-            storageBucket: "traderx-signals-new.appspot.com",
-            messagingSenderId: "421709873458",
-            appId: "1:421709873458:web:62bbbca96cce4def4d172b"
-        };
-        
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        
         document.addEventListener('DOMContentLoaded', function() {
             // Create particles for background effect
             createParticles();
@@ -890,31 +872,22 @@
                         return;
                     }
                     
-                    // Check user in Firestore
-                    db.collection('users').doc(userId).get()
-                        .then(doc => {
-                            if (doc.exists) {
-                                const userData = doc.data();
-                                
-                                // Check if user is active and name matches
-                                if (userData.active !== false && userData.name.toLowerCase() === userName.toLowerCase()) {
-                                    // Store user ID for session
-                                    localStorage.setItem('traderxUserId', userId);
-                                    localStorage.setItem('traderxUserName', userName);
-                                    
-                                    // Show signals
-                                    showSignals();
-                                } else {
-                                    showError('Your access has been revoked. Please contact admin.');
-                                }
-                            } else {
-                                showError('Invalid name or ID number! Please check your details.');
-                            }
-                        })
-                        .catch(error => {
-                            console.error("Error checking user:", error);
-                            showError('Error connecting to server. Please try again.');
-                        });
+                    // Check user in localStorage
+                    const users = JSON.parse(localStorage.getItem('traderxUsers') || '[]');
+                    const user = users.find(u => u.idNumber === userId);
+                    
+                    if (user && user.active && user.name.toLowerCase() === userName.toLowerCase()) {
+                        // Store user ID for session
+                        localStorage.setItem('traderxUserId', userId);
+                        localStorage.setItem('traderxUserName', userName);
+                        
+                        // Show signals
+                        showSignals();
+                    } else if (user && !user.active) {
+                        showError('Your access has been revoked. Please contact admin.');
+                    } else {
+                        showError('Invalid name or ID number! Please check your details.');
+                    }
                 });
                 
                 userNameInput.addEventListener('keypress', function(e) {
@@ -934,30 +907,26 @@
                 });
                 
                 refreshBtn.addEventListener('click', function() {
-                    // Check if user still exists and is active
+                    // Check if user still has access
                     const userId = localStorage.getItem('traderxUserId');
                     if (!userId) {
                         showTokenSection();
                         return;
                     }
                     
-                    db.collection('users').doc(userId).get()
-                        .then(doc => {
-                            if (doc.exists && doc.data().active !== false) {
-                                loadSignals();
-                                this.innerHTML = '<i class="fas fa-sync-alt"></i> Refreshed!';
-                                setTimeout(() => {
-                                    refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
-                                }, 2000);
-                            } else {
-                                showError('Your access has been revoked. Please contact admin.');
-                                showTokenSection();
-                            }
-                        })
-                        .catch(error => {
-                            console.error("Error verifying user:", error);
-                            showError('Error connecting to server. Please try again.');
-                        });
+                    const users = JSON.parse(localStorage.getItem('traderxUsers') || '[]');
+                    const user = users.find(u => u.idNumber === userId);
+                    
+                    if (user && user.active) {
+                        loadSignals();
+                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Refreshed!';
+                        setTimeout(() => {
+                            refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
+                        }, 2000);
+                    } else {
+                        showError('Your access has been revoked. Please contact admin.');
+                        showTokenSection();
+                    }
                 });
                 
                 // Payment methods handling
@@ -1084,48 +1053,33 @@
                     return;
                 }
                 
-                db.collection('signals')
-                    .orderBy('timestamp', 'desc')
-                    .get()
-                    .then(snapshot => {
-                        signalsBody.innerHTML = '';
-                        
-                        if (snapshot.empty) {
-                            signalsBody.innerHTML = `
-                                <tr>
-                                    <td colspan="6" style="text-align: center; padding: 30px;">
-                                        No signals available at the moment. Check back soon or contact admin.
-                                    </td>
-                                </tr>
-                            `;
-                            return;
-                        }
-                        
-                        snapshot.forEach(doc => {
-                            const signal = doc.data();
-                            const row = document.createElement('tr');
-                            row.classList.add('signal-animation');
-                            row.innerHTML = `
-                                <td>${signal.pair}</td>
-                                <td><span class="status ${signal.status === 'OPEN' ? 'status-open' : 'status-closed'}">${signal.status}</span></td>
-                                <td>${signal.tp}</td>
-                                <td>${signal.sl}</td>
-                                <td class="action-${signal.action.toLowerCase()}">${signal.action}</td>
-                                <td><span class="timestamp">${signal.timestamp}</span></td>
-                            `;
-                            signalsBody.appendChild(row);
-                        });
-                    })
-                    .catch(error => {
-                        console.error("Error loading signals:", error);
-                        signalsBody.innerHTML = `
-                            <tr>
-                                <td colspan="6" style="text-align: center; padding: 30px; color: #f44336;">
-                                    Error loading signals. Please refresh the page.
-                                </td>
-                            </tr>
-                        `;
-                    });
+                const signals = JSON.parse(localStorage.getItem('traderxSignals') || '[]');
+                signalsBody.innerHTML = '';
+                
+                if (signals.length === 0) {
+                    signalsBody.innerHTML = `
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 30px;">
+                                No signals available at the moment. Check back soon or contact admin.
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                signals.forEach(signal => {
+                    const row = document.createElement('tr');
+                    row.classList.add('signal-animation');
+                    row.innerHTML = `
+                        <td>${signal.pair}</td>
+                        <td><span class="status ${signal.status === 'OPEN' ? 'status-open' : 'status-closed'}">${signal.status}</span></td>
+                        <td>${signal.tp}</td>
+                        <td>${signal.sl}</td>
+                        <td class="action-${signal.action.toLowerCase()}">${signal.action}</td>
+                        <td><span class="timestamp">${signal.timestamp}</span></td>
+                    `;
+                    signalsBody.appendChild(row);
+                });
             }
         });
     </script>
