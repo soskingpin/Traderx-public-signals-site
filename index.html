@@ -872,21 +872,42 @@
                         return;
                     }
                     
-                    // Check user in localStorage
-                    const users = JSON.parse(localStorage.getItem('traderxUsers') || '[]');
-                    const user = users.find(u => u.idNumber === userId);
-                    
-                    if (user && user.active && user.name.toLowerCase() === userName.toLowerCase()) {
+                    try {
+                        // Check user in localStorage
+                        const usersData = localStorage.getItem('traderxUsers');
+                        if (!usersData) {
+                            showError('No users registered. Please contact admin.');
+                            return;
+                        }
+                        
+                        const users = JSON.parse(usersData);
+                        const user = users.find(u => u.idNumber === userId);
+                        
+                        if (!user) {
+                            showError('No user found with that ID number');
+                            return;
+                        }
+                        
+                        if (!user.active) {
+                            showError('Your access has been revoked. Please contact admin.');
+                            return;
+                        }
+                        
+                        // Case-insensitive comparison with trimmed values
+                        if (user.name.trim().toLowerCase() !== userName.trim().toLowerCase()) {
+                            showError(`Name mismatch. Expected: "${user.name}", Entered: "${userName}"`);
+                            return;
+                        }
+                        
                         // Store user ID for session
                         localStorage.setItem('traderxUserId', userId);
                         localStorage.setItem('traderxUserName', userName);
                         
                         // Show signals
                         showSignals();
-                    } else if (user && !user.active) {
-                        showError('Your access has been revoked. Please contact admin.');
-                    } else {
-                        showError('Invalid name or ID number! Please check your details.');
+                    } catch (error) {
+                        console.error('Error during login:', error);
+                        showError('System error. Please try again later.');
                     }
                 });
                 
@@ -914,18 +935,29 @@
                         return;
                     }
                     
-                    const users = JSON.parse(localStorage.getItem('traderxUsers') || '[]');
-                    const user = users.find(u => u.idNumber === userId);
-                    
-                    if (user && user.active) {
-                        loadSignals();
-                        this.innerHTML = '<i class="fas fa-sync-alt"></i> Refreshed!';
-                        setTimeout(() => {
-                            refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
-                        }, 2000);
-                    } else {
-                        showError('Your access has been revoked. Please contact admin.');
-                        showTokenSection();
+                    try {
+                        const usersData = localStorage.getItem('traderxUsers');
+                        if (!usersData) {
+                            showTokenSection();
+                            return;
+                        }
+                        
+                        const users = JSON.parse(usersData);
+                        const user = users.find(u => u.idNumber === userId);
+                        
+                        if (user && user.active) {
+                            loadSignals();
+                            this.innerHTML = '<i class="fas fa-sync-alt"></i> Refreshed!';
+                            setTimeout(() => {
+                                refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
+                            }, 2000);
+                        } else {
+                            showError('Your access has been revoked. Please contact admin.');
+                            showTokenSection();
+                        }
+                    } catch (error) {
+                        console.error('Error checking user access:', error);
+                        showError('Error connecting to server. Please try again.');
                     }
                 });
                 
@@ -1053,33 +1085,59 @@
                     return;
                 }
                 
-                const signals = JSON.parse(localStorage.getItem('traderxSignals') || '[]');
-                signalsBody.innerHTML = '';
-                
-                if (signals.length === 0) {
+                try {
+                    const usersData = localStorage.getItem('traderxUsers');
+                    if (!usersData) {
+                        showTokenSection();
+                        return;
+                    }
+                    
+                    const users = JSON.parse(usersData);
+                    const user = users.find(u => u.idNumber === userId);
+                    
+                    if (!user || !user.active) {
+                        showError('Your access has been revoked. Please contact admin.');
+                        showTokenSection();
+                        return;
+                    }
+                    
+                    const signals = JSON.parse(localStorage.getItem('traderxSignals') || '[]');
+                    signalsBody.innerHTML = '';
+                    
+                    if (signals.length === 0) {
+                        signalsBody.innerHTML = `
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 30px;">
+                                    No signals available at the moment. Check back soon or contact admin.
+                                </td>
+                            </tr>
+                        `;
+                        return;
+                    }
+                    
+                    signals.forEach(signal => {
+                        const row = document.createElement('tr');
+                        row.classList.add('signal-animation');
+                        row.innerHTML = `
+                            <td>${signal.pair}</td>
+                            <td><span class="status ${signal.status === 'OPEN' ? 'status-open' : 'status-closed'}">${signal.status}</span></td>
+                            <td>${signal.tp}</td>
+                            <td>${signal.sl}</td>
+                            <td class="action-${signal.action.toLowerCase()}">${signal.action}</td>
+                            <td><span class="timestamp">${signal.timestamp}</span></td>
+                        `;
+                        signalsBody.appendChild(row);
+                    });
+                } catch (error) {
+                    console.error('Error loading signals:', error);
                     signalsBody.innerHTML = `
                         <tr>
-                            <td colspan="6" style="text-align: center; padding: 30px;">
-                                No signals available at the moment. Check back soon or contact admin.
+                            <td colspan="6" style="text-align: center; padding: 30px; color: #f44336;">
+                                Error loading signals. Please refresh the page.
                             </td>
                         </tr>
                     `;
-                    return;
                 }
-                
-                signals.forEach(signal => {
-                    const row = document.createElement('tr');
-                    row.classList.add('signal-animation');
-                    row.innerHTML = `
-                        <td>${signal.pair}</td>
-                        <td><span class="status ${signal.status === 'OPEN' ? 'status-open' : 'status-closed'}">${signal.status}</span></td>
-                        <td>${signal.tp}</td>
-                        <td>${signal.sl}</td>
-                        <td class="action-${signal.action.toLowerCase()}">${signal.action}</td>
-                        <td><span class="timestamp">${signal.timestamp}</span></td>
-                    `;
-                    signalsBody.appendChild(row);
-                });
             }
         });
     </script>
