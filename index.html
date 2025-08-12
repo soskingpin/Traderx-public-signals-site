@@ -94,13 +94,26 @@
         
         .token-input {
             display: flex;
+            flex-direction: column;
             max-width: 500px;
             margin: 0 auto 30px;
-            gap: 10px;
+            gap: 15px;
         }
         
-        #tokenInput {
-            flex: 1;
+        .form-group {
+            text-align: left;
+            width: 100%;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        #userNameInput, #userIdInput {
+            width: 100%;
             padding: 15px 20px;
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 152, 0, 0.3);
@@ -111,7 +124,7 @@
             backdrop-filter: blur(5px);
         }
         
-        #tokenInput:focus {
+        #userNameInput:focus, #userIdInput:focus {
             outline: none;
             border-color: var(--secondary);
             box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.2);
@@ -131,6 +144,8 @@
             align-items: center;
             gap: 8px;
             box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+            align-self: center;
+            height: 50px;
         }
         
         #tokenSubmit:hover {
@@ -597,30 +612,37 @@
     
     <div class="token-section" id="tokenSection">
         <h2 class="token-title">Access TraderX Signals</h2>
-        <p class="token-subtitle">Enter your token to view real-time trading signals</p>
+        <p class="token-subtitle">Enter your details to view real-time trading signals</p>
         
         <div class="token-input">
-            <input type="password" id="tokenInput" placeholder="Enter token here">
+            <div class="form-group">
+                <label for="userNameInput">Your Name</label>
+                <input type="text" id="userNameInput" placeholder="Enter your full name">
+            </div>
+            <div class="form-group">
+                <label for="userIdInput">ID Number</label>
+                <input type="text" id="userIdInput" placeholder="Enter your ID number">
+            </div>
             <button id="tokenSubmit">
                 <i class="fas fa-lock-open"></i> Access Signals
             </button>
         </div>
         
         <div class="error-message" id="errorMessage">
-            <i class="fas fa-exclamation-circle"></i> Wrong token ID! Contact us for a valid token.
+            <i class="fas fa-exclamation-circle"></i> Invalid name or ID number! Please check your details.
         </div>
         
         <div class="whatsapp-section">
-            <a href="https://wa.me/263782637207?text=Hello%20TraderX%2C%20I%20need%20a%20token%20for%20signals%20(week%2F2%20weeks%2Fmonth)" class="whatsapp-btn" target="_blank">
-                <i class="fab fa-whatsapp"></i> Admin 1
+            <a href="https://wa.me/263782637207?text=Hello%20TraderX%2C%20I%20need%20access%20to%20the%20signals%20platform." class="whatsapp-btn" target="_blank">
+                <i class="fab fa-whatsapp"></i> Contact Admin 1
             </a>
-            <a href="https://wa.me/263778652739?text=Hello%20TraderX%2C%20I%20need%20a%20token%20for%20signals%20(week%2F2%20weeks%2Fmonth)" class="whatsapp-btn" target="_blank">
-                <i class="fab fa-whatsapp"></i> Admin 2
+            <a href="https://wa.me/263778652739?text=Hello%20TraderX%2C%20I%20need%20access%20to%20the%20signals%20platform." class="whatsapp-btn" target="_blank">
+                <i class="fab fa-whatsapp"></i> Contact Admin 2
             </a>
         </div>
         
         <div class="payment-options">
-            <h3 class="payment-title">Don't have a token? Get access now!</h3>
+            <h3 class="payment-title">Don't have access? Get access now!</h3>
             <p style="text-align: center; margin-bottom: 20px; color: rgba(255, 255, 255, 0.7);">Choose a payment method to get instant access to our signals</p>
             
             <div class="payment-methods">
@@ -674,7 +696,7 @@
                         <li>Use the USSD code above to make payment</li>
                         <li>Replace "AMOUNT" with your selected package price</li>
                         <li>Send payment confirmation screenshot to WhatsApp</li>
-                        <li>Your token will be sent within 24 hours</li>
+                        <li>Your access will be granted within 24 hours</li>
                     </ul>
                     
                     <a href="https://wa.me/263778652739" class="whatsapp-btn" style="width: 100%; margin-top: 20px;" target="_blank">
@@ -714,7 +736,7 @@
                         <li>Send payment to mobile number: 0782637207</li>
                         <li>Use your selected package amount</li>
                         <li>Send payment confirmation screenshot to WhatsApp</li>
-                        <li>Your token will be sent within 24 hours</li>
+                        <li>Your access will be granted within 24 hours</li>
                     </ul>
                     
                     <a href="https://wa.me/263782637207" class="whatsapp-btn" style="width: 100%; margin-top: 20px;" target="_blank">
@@ -730,10 +752,10 @@
     </div>
     
     <div class="session-expired hidden" id="sessionExpired">
-        <h3><i class="fas fa-lock"></i> Session Expired</h3>
-        <p>Your session has expired for security reasons. Please enter the token again to continue.</p>
+        <h3><i class="fas fa-lock"></i> Access Revoked</h3>
+        <p>Your access has been revoked by the admin. Please contact support for assistance.</p>
         <button class="btn" id="renewSessionBtn" style="background: rgba(255, 152, 0, 0.2); color: var(--secondary); border: 1px solid rgba(255, 152, 0, 0.3); padding: 8px 20px; border-radius: 5px; margin-top: 10px;">
-            <i class="fas fa-redo"></i> Enter Token Again
+            <i class="fas fa-redo"></i> Try Again
         </button>
     </div>
     
@@ -801,7 +823,25 @@
         <p>© 2023 TraderX Signals - All rights reserved</p>
     </div>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    
     <script>
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBgbaNwHsDyLP2uatciYP7NTfyPAnC6xw4",
+            authDomain: "traderx-signals-new.firebaseapp.com",
+            projectId: "traderx-signals-new",
+            storageBucket: "traderx-signals-new.appspot.com",
+            messagingSenderId: "421709873458",
+            appId: "1:421709873458:web:62bbbca96cce4def4d172b"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        
         document.addEventListener('DOMContentLoaded', function() {
             // Create particles for background effect
             createParticles();
@@ -809,7 +849,8 @@
             const tokenSection = document.getElementById('tokenSection');
             const signalsContainer = document.getElementById('signalsContainer');
             const sessionExpired = document.getElementById('sessionExpired');
-            const tokenInput = document.getElementById('tokenInput');
+            const userNameInput = document.getElementById('userNameInput');
+            const userIdInput = document.getElementById('userIdInput');
             const tokenSubmit = document.getElementById('tokenSubmit');
             const refreshBtn = document.getElementById('refreshBtn');
             const signalsBody = document.getElementById('signalsBody');
@@ -828,81 +869,62 @@
             const backFromInnbucks = document.getElementById('backFromInnbucks');
             const packageCards = document.querySelectorAll('.package-card');
             
-            // Initialize token system
-            initTokenSystem();
+            // Initialize system
+            initSystem();
             
-            function initTokenSystem() {
-                // Initialize token version only if not already set
-                if (!localStorage.getItem('currentTokenVersion')) {
-                    const tokenVersion = localStorage.getItem('tokenVersion') || '0';
-                    localStorage.setItem('currentTokenVersion', tokenVersion);
-                }
-                
-                // Check token validity immediately
-                const isValid = checkTokenValidity();
-                
-                if (isValid) {
-                    showSignals();
-                } else {
-                    showTokenSection();
-                }
-                
-                // Set up storage event listener
-                setupStorageEventListener();
+            function initSystem() {
+                // Always show token section on page load
+                showTokenSection();
                 
                 // Set up UI interactions
                 setupUIInteractions();
             }
             
-            function setupStorageEventListener() {
-                // Listen for token version changes
-                window.addEventListener('storage', function(e) {
-                    if (e.key === 'tokenVersion') {
-                        const currentTokenVersion = localStorage.getItem('currentTokenVersion');
-                        
-                        // If token version changed, force logout
-                        if (e.newValue !== currentTokenVersion) {
-                            localStorage.setItem('currentTokenVersion', e.newValue);
-                            forceLogout();
-                        }
-                    }
-                });
-            }
-            
-            function forceLogout() {
-                // Clear current token to force re-entry
-                localStorage.removeItem('currentToken');
-                localStorage.removeItem('tokenTimestamp');
-                
-                // Show session expired message
-                showSessionExpired();
-                showError('Token has been updated by admin. Please enter the new token.');
-            }
-            
             function setupUIInteractions() {
                 tokenSubmit.addEventListener('click', function() {
-                    const token = tokenInput.value.trim();
-                    const storedToken = localStorage.getItem('signalsToken') || '12345';
+                    const userName = userNameInput.value.trim();
+                    const userId = userIdInput.value.trim();
                     
-                    if (token === storedToken) {
-                        // Store token with timestamp for session management
-                        localStorage.setItem('currentToken', token);
-                        localStorage.setItem('tokenTimestamp', Date.now());
-                        
-                        // Record user login (for admin panel)
-                        recordUserLogin();
-                        
-                        // Show signals
-                        showSignals();
-                    } else {
-                        showError('Wrong token ID! Contact us for a valid token.');
-                        tokenInput.value = '';
-                        tokenInput.focus();
+                    if (!userName || !userId) {
+                        showError('Please enter both name and ID number');
+                        return;
+                    }
+                    
+                    // Check user in Firestore
+                    db.collection('users').doc(userId).get()
+                        .then(doc => {
+                            if (doc.exists) {
+                                const userData = doc.data();
+                                
+                                // Check if user is active and name matches
+                                if (userData.active !== false && userData.name.toLowerCase() === userName.toLowerCase()) {
+                                    // Store user ID for session
+                                    localStorage.setItem('traderxUserId', userId);
+                                    localStorage.setItem('traderxUserName', userName);
+                                    
+                                    // Show signals
+                                    showSignals();
+                                } else {
+                                    showError('Your access has been revoked. Please contact admin.');
+                                }
+                            } else {
+                                showError('Invalid name or ID number! Please check your details.');
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error checking user:", error);
+                            showError('Error connecting to server. Please try again.');
+                        });
+                });
+                
+                userNameInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter' && userIdInput.value.trim()) {
+                        tokenSubmit.click();
                     }
                 });
                 
-                tokenInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
+                userIdInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter' && userNameInput.value.trim()) {
                         tokenSubmit.click();
                     }
                 });
@@ -912,17 +934,30 @@
                 });
                 
                 refreshBtn.addEventListener('click', function() {
-                    // Check if token has expired
-                    if (!checkTokenValidity()) {
-                        forceLogout();
+                    // Check if user still exists and is active
+                    const userId = localStorage.getItem('traderxUserId');
+                    if (!userId) {
+                        showTokenSection();
                         return;
                     }
                     
-                    loadSignals();
-                    this.innerHTML = '<i class="fas fa-sync-alt"></i> Refreshed!';
-                    setTimeout(() => {
-                        refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
-                    }, 2000);
+                    db.collection('users').doc(userId).get()
+                        .then(doc => {
+                            if (doc.exists && doc.data().active !== false) {
+                                loadSignals();
+                                this.innerHTML = '<i class="fas fa-sync-alt"></i> Refreshed!';
+                                setTimeout(() => {
+                                    refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
+                                }, 2000);
+                            } else {
+                                showError('Your access has been revoked. Please contact admin.');
+                                showTokenSection();
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error verifying user:", error);
+                            showError('Error connecting to server. Please try again.');
+                        });
                 });
                 
                 // Payment methods handling
@@ -963,9 +998,7 @@
                             
                             // Update WhatsApp message
                             const whatsappLink = document.querySelector('#ecocashInstructions .whatsapp-btn');
-                            whatsappLink.href = `https://wa.me/263778652739?text=Hello%20TraderX%2C%20I%20have%20paid%20for%20${packageName}%20package%20(%24${amount})%20via%20EcoCash.%20Please%20provide%20my%20token.`;
-                            
-                            document.getElementById('ecocashInstructions').style.display = 'block';
+                            whatsappLink.href = `https://wa.me/263778652739?text=Hello%20TraderX%2C%20I%20have%20paid%20for%20${packageName}%20package%20(%24${amount})%20via%20EcoCash.%20Please%20grant%20me%20access%20to%20the%20signals.`
                         }
                     });
                 });
@@ -1015,7 +1048,8 @@
                 tokenSection.classList.remove('hidden');
                 sessionExpired.classList.add('hidden');
                 signalsContainer.classList.add('hidden');
-                tokenInput.value = '';
+                userNameInput.value = '';
+                userIdInput.value = '';
                 errorMessage.style.display = 'none';
             }
             
@@ -1042,105 +1076,56 @@
                 }, 5000);
             }
             
-            function checkTokenValidity() {
-                const token = localStorage.getItem('currentToken');
-                const tokenTimestamp = localStorage.getItem('tokenTimestamp');
-                const storedToken = localStorage.getItem('signalsToken') || '12345';
-                
-                // If no token, show token section
-                if (!token) {
-                    return false;
-                }
-                
-                // If token expired (5 minutes timeout), show token section
-                if (!tokenTimestamp || (Date.now() - tokenTimestamp > 300000)) {
-                    return false;
-                }
-                
-                // Verify token matches current admin token
-                if (token !== storedToken) {
-                    return false;
-                }
-                
-                return true;
-            }
-            
             function loadSignals() {
-                // Verify token is still valid before loading signals
-                if (!checkTokenValidity()) {
-                    forceLogout();
-                    return;
-                }
-                
-                const signals = JSON.parse(localStorage.getItem('tradingSignals') || '[]');
-                signalsBody.innerHTML = '';
-                
-                if (signals.length === 0) {
-                    signalsBody.innerHTML = `
-                        <tr>
-                            <td colspan="6" style="text-align: center; padding: 30px;">
-                                No signals available at the moment. Check back soon or contact admin.
-                            </td>
-                        </tr>
-                    `;
-                    return;
-                }
-                
-                signals.forEach(signal => {
-                    const row = document.createElement('tr');
-                    row.classList.add('signal-animation');
-                    row.innerHTML = `
-                        <td>${signal.pair}</td>
-                        <td><span class="status ${signal.status === 'OPEN' ? 'status-open' : 'status-closed'}">${signal.status}</span></td>
-                        <td>${signal.tp}</td>
-                        <td>${signal.sl}</td>
-                        <td class="action-${signal.action.toLowerCase()}">${signal.action}</td>
-                        <td><span class="timestamp">${signal.timestamp}</span></td>
-                    `;
-                    signalsBody.appendChild(row);
-                });
-            }
-            
-            // Record user login for admin tracking
-            function recordUserLogin() {
+                // Verify user still has access
                 const userId = localStorage.getItem('traderxUserId');
-                let users = JSON.parse(localStorage.getItem('traderxUsers') || '[]');
-                
-                // Generate new user ID if not exists
                 if (!userId) {
-                    const newUserCount = users.length + 1;
-                    const newUserId = `user${newUserCount}`;
-                    
-                    localStorage.setItem('traderxUserId', newUserId);
-                    
-                    // Add new user
-                    users.push({
-                        id: newUserId,
-                        name: `User ${newUserCount}`,
-                        loginTime: new Date().toISOString(),
-                        lastActive: new Date().toISOString(),
-                        online: true
-                    });
-                } else {
-                    // Update existing user
-                    const userIndex = users.findIndex(u => u.id === userId);
-                    if (userIndex !== -1) {
-                        users[userIndex].lastActive = new Date().toISOString();
-                        users[userIndex].online = true;
-                    } else {
-                        // User not found in list (token changed), create new entry
-                        const newUserCount = users.length + 1;
-                        users.push({
-                            id: userId,
-                            name: `User ${newUserCount}`,
-                            loginTime: new Date().toISOString(),
-                            lastActive: new Date().toISOString(),
-                            online: true
-                        });
-                    }
+                    showTokenSection();
+                    return;
                 }
                 
-                localStorage.setItem('traderxUsers', JSON.stringify(users));
+                db.collection('signals')
+                    .orderBy('timestamp', 'desc')
+                    .get()
+                    .then(snapshot => {
+                        signalsBody.innerHTML = '';
+                        
+                        if (snapshot.empty) {
+                            signalsBody.innerHTML = `
+                                <tr>
+                                    <td colspan="6" style="text-align: center; padding: 30px;">
+                                        No signals available at the moment. Check back soon or contact admin.
+                                    </td>
+                                </tr>
+                            `;
+                            return;
+                        }
+                        
+                        snapshot.forEach(doc => {
+                            const signal = doc.data();
+                            const row = document.createElement('tr');
+                            row.classList.add('signal-animation');
+                            row.innerHTML = `
+                                <td>${signal.pair}</td>
+                                <td><span class="status ${signal.status === 'OPEN' ? 'status-open' : 'status-closed'}">${signal.status}</span></td>
+                                <td>${signal.tp}</td>
+                                <td>${signal.sl}</td>
+                                <td class="action-${signal.action.toLowerCase()}">${signal.action}</td>
+                                <td><span class="timestamp">${signal.timestamp}</span></td>
+                            `;
+                            signalsBody.appendChild(row);
+                        });
+                    })
+                    .catch(error => {
+                        console.error("Error loading signals:", error);
+                        signalsBody.innerHTML = `
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 30px; color: #f44336;">
+                                    Error loading signals. Please refresh the page.
+                                </td>
+                            </tr>
+                        `;
+                    });
             }
         });
     </script>
