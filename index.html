@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TraderX Signals</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #0d47a1;
+            --secondary: #ff9800;
+            --dark: #0c1b33;
+            --light: #f5f9ff;
+            --gray: #e0e7f0;
+            --success: #4caf50;
+            --text: #333;
+            --text-light: #666;
+            --error: #f44336;
+            --online: #4ade80;
+            --offline: #6b7280;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0c1b33, #0d47a1);
+            color: #e0e0e0;
+            min-height: 100vh;
+            background-attachment: fixed;
+            overflow-x: hidden;
+        }
+        
+        .header {
+            background: rgba(12, 27, 51, 0.95);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 152, 0, 0.2);
+            position: relative;
+            z-index: 100;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.6rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--secondary), #FFB74D);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 8s ease infinite;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .logo i {
+            font-size: 1.8rem;
+        }
+        
+        .token-section {
+            background: rgba(12, 27, 51, 0.85);
+            padding: 40px 25px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 152, 0, 0.1);
+        }
+        
+        .token-title {
+            font-size: 2.2rem;
+            margin-bottom: 15px;
+            background: linear-gradient(90deg, var(--secondary), #FFB74D);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .token-subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 25px;
+            font-size: 1.1rem;
+        }
+        
+        .token-input {
+            display: flex;
+            max-width: 500px;
+            margin: 0 auto 30px;
+            gap: 10px;
+        }
+        
+        #tokenInput {
+            flex: 1;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 152, 0, 0.3);
+            color: white;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            backdrop-filter: blur(5px);
+        }
+        
+        #tokenInput:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.2);
+        }
+        
+        #tokenSubmit {
+            background: linear-gradient(135deg, var(--secondary), #FFB74D);
+            color: var(--dark);
+            border: none;
+            padding: 0 25px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+        }
+        
+        #tokenSubmit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(255, 152, 0, 0.4);
+        }
+        
+        .error-message {
+            background: rgba(244, 67, 54, 0.15);
+            color: #f44336;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px auto;
+            max-width: 500px;
+            display: none;
+            border-left: 4px solid #f44336;
+        }
+        
+        .error-message i {
+            margin-right: 8px;
+        }
+        
+        .whatsapp-section {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 25px 0;
+        }
+        
+        .whatsapp-btn {
+            background: rgba(37, 211, 102, 0.2);
+            color: #25D366;
+            border: 1px solid rgba(37, 211, 102, 0.4);
+            padding: 12px 20px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        
+        .whatsapp-btn:hover {
+            background: rgba(37, 211, 102, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .payment-options {
+            background: rgba(12, 27, 51, 0.7);
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 700px;
+            margin: 0 auto 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 152, 0, 0.1);
+        }
+        
+        .payment-title {
+            text-align: center;
+            font-size: 1.6rem;
+            margin-bottom: 20px;
+            color: var(--secondary);
+        }
+        
+        .payment-methods {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .payment-card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .payment-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.12);
+            border-color: var(--secondary);
+        }
+        
+        .payment-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .ecocash .payment-icon {
+            color: #25D366;
+        }
+        
+        .innbucks .payment-icon {
+            color: #00BCD4;
+        }
+        
+        .payment-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .package-options {
+            display: none;
+            margin-top: 20px;
+            gap: 15px;
+        }
+        
+        .package-card {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .package-card:hover {
+            background: rgba(255, 152, 0, 0.2);
+            transform: translateY(-3px);
+        }
+        
+        .package-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--secondary);
+        }
+        
+        .package-price {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+        
+        .ussd-code {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .ussd-code p {
+            font-family: monospace;
+            font-size: 1.2rem;
+            margin: 10px 0;
+            color: var(--secondary);
+        }
+        
+        .ussd-code span {
+            background: rgba(255, 152, 0, 0.2);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: 600;
+        }
+        
+        .payment-instructions {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .instructions-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        
+        .instructions-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        
+        .instructions-list li:before {
+            content: '✓';
+            color: var(--success);
+            font-weight: bold;
+            margin-top: 3px;
+        }
+        
+        .account-info {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+        
+        .account-info h4 {
+            color: var(--secondary);
+            margin-bottom: 8px;
+        }
+        
+        .back-btn {
+            background: rgba(100, 116, 139, 0.2);
+            color: #94a3b8;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .back-btn:hover {
+            background: rgba(100, 116, 139, 0.3);
+        }
+        
+        .signals-container {
+            padding: 25px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .signals-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: var(--secondary);
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        h1 i {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
+        
+        .refresh-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: #e0e0e0;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+        
+        .refresh-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(12, 27, 51, 0.7);
+            border-radius: 12px;
+            overflow: hidden;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 152, 0, 0.1);
+        }
+        
+        thead {
+            background: rgba(13, 71, 161, 0.5);
+        }
+        
+        th {
+            padding: 15px;
+            text-align: left;
+            color: var(--secondary);
+            font-weight: 600;
+        }
+        
+        td {
+            padding: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        tr {
+            transition: background 0.2s;
+        }
+        
+        tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+        
+        .status-open {
+            background: rgba(74, 222, 128, 0.15);
+            color: #4ade80;
+        }
+        
+        .status-closed {
+            background: rgba(248, 113, 113, 0.15);
+            color: #f87171;
+        }
+        
+        .action-buy {
+            color: #4ade80;
+            font-weight: 600;
+        }
+        
+        .action-sell {
+            color: #f87171;
+            font-weight: 600;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .timestamp {
+            color: #888;
+            font-size: 0.85rem;
+        }
+        
+        .instructions {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 20px;
+            background: rgba(12, 27, 51, 0.7);
+            border-radius: 8px;
+            line-height: 1.6;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 152, 0, 0.1);
+        }
+        
+        .instructions h3 {
+            color: var(--secondary);
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        
+        .instructions li:before {
+            content: '•';
+            color: var(--secondary);
+            margin-top: 5px;
+        }
+        
+        .watermark {
+            text-align: center;
+            padding: 20px;
+            color: #555;
+            font-size: 0.9rem;
+        }
+        
+        .session-expired {
+            background: rgba(12, 27, 51, 0.7);
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+            margin: 20px auto;
+            max-width: 600px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 152, 0, 0.1);
+        }
+        
+        .session-expired h3 {
+            color: #f87171;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .trading-pairs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+        
+        .pair-badge {
+            background: rgba(13, 71, 161, 0.3);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.5;
+            animation: float 15s infinite linear;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0) translateX(0); opacity: 0.5; }
+            100% { transform: translateY(-100vh) translateX(50px); opacity: 0; }
+        }
+        
+        .signal-animation {
+            animation: signalPulse 2s infinite;
+        }
+        
+        @keyframes signalPulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(255, 152, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 152, 0, 0); }
+        }
+        
+        .glow-text {
+            text-shadow: 0 0 10px rgba(255, 152, 0, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    
+    <div class="header">
+        <div class="logo">
+            <i class="fas fa-chart-line"></i>
+            <span>TraderX Signals</span>
+        </div>
+    </div>
+    
+    <div class="token-section" id="tokenSection">
+        <h2 class="token-title">Access TraderX Signals</h2>
+        <p class="token-subtitle">Enter your token to view real-time trading signals</p>
+        
+        <div class="token-input">
+            <input type="password" id="tokenInput" placeholder="Enter token here">
+            <button id="tokenSubmit">
+                <i class="fas fa-lock-open"></i> Access Signals
+            </button>
+        </div>
+        
+        <div class="error-message" id="errorMessage">
+            <i class="fas fa-exclamation-circle"></i> Wrong token ID! Contact us for a valid token.
+        </div>
+        
+        <div class="whatsapp-section">
+            <a href="https://wa.me/263782637207?text=Hello%20TraderX%2C%20I%20need%20a%20token%20for%20signals%20(week%2F2%20weeks%2Fmonth)" class="whatsapp-btn" target="_blank">
+                <i class="fab fa-whatsapp"></i> Admin 1
+            </a>
+            <a href="https://wa.me/263778652739?text=Hello%20TraderX%2C%20I%20need%20a%20token%20for%20signals%20(week%2F2%20weeks%2Fmonth)" class="whatsapp-btn" target="_blank">
+                <i class="fab fa-whatsapp"></i> Admin 2
+            </a>
+        </div>
+        
+        <div class="payment-options">
+            <h3 class="payment-title">Don't have a token? Get access now!</h3>
+            <p style="text-align: center; margin-bottom: 20px; color: rgba(255, 255, 255, 0.7);">Choose a payment method to get instant access to our signals</p>
+            
+            <div class="payment-methods">
+                <div class="payment-card ecocash" id="ecocashCard">
+                    <div class="payment-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <div class="payment-name">EcoCash</div>
+                    <p style="color: rgba(255, 255, 255, 0.7);">Mobile money payment</p>
+                </div>
+                
+                <div class="payment-card innbucks" id="innbucksCard">
+                    <div class="payment-icon">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <div class="payment-name">Innbucks</div>
+                    <p style="color: rgba(255, 255, 255, 0.7);">Digital wallet payment</p>
+                </div>
+            </div>
+            
+            <div class="package-options" id="ecocashPackages">
+                <h4 style="text-align: center; width: 100%; margin: 15px 0; color: var(--secondary);">Select Your Package</h4>
+                <div class="package-card" data-amount="15" data-package="week">
+                    <div class="package-name">1 Week</div>
+                    <div class="package-price">$15</div>
+                </div>
+                <div class="package-card" data-amount="20" data-package="2weeks">
+                    <div class="package-name">2 Weeks</div>
+                    <div class="package-price">$20</div>
+                </div>
+                <div class="package-card" data-amount="40" data-package="month">
+                    <div class="package-name">1 Month</div>
+                    <div class="package-price">$40</div>
+                </div>
+                
+                <div class="account-info">
+                    <h4>Account Details</h4>
+                    <p>Name: <strong>Michael Tanatswa</strong></p>
+                    <p>Mobile: <strong>0778652739</strong></p>
+                </div>
+                
+                <div class="ussd-code" id="ecocashUssd">
+                    <p>Press this code to pay:</p>
+                    <p><span id="ecocashCode">*153*1*1*0778652739*AMOUNT#</span></p>
+                    <button class="btn" id="copyEcoCash" style="background: rgba(37, 211, 102, 0.2); color: #25D366; border: 1px solid rgba(37, 211, 102, 0.4); padding: 8px 15px; border-radius: 5px; cursor: pointer;">Copy Code</button>
+                </div>
+                
+                <div class="payment-instructions" id="ecocashInstructions">
+                    <h4 style="text-align: center; width: 100%; margin: 15px 0; color: var(--secondary);">Payment Instructions</h4>
+                    <ul class="instructions-list">
+                        <li>Use the USSD code above to make payment</li>
+                        <li>Replace "AMOUNT" with your selected package price</li>
+                        <li>Send payment confirmation screenshot to WhatsApp</li>
+                        <li>Your token will be sent within 24 hours</li>
+                    </ul>
+                    
+                    <a href="https://wa.me/263778652739" class="whatsapp-btn" style="width: 100%; margin-top: 20px;" target="_blank">
+                        <i class="fab fa-whatsapp"></i> Chat with Admin After Payment
+                    </a>
+                </div>
+                
+                <button class="back-btn" id="backFromEcoCash">
+                    <i class="fas fa-arrow-left"></i> Back to Payment Methods
+                </button>
+            </div>
+            
+            <div class="package-options" id="innbucksPackages">
+                <h4 style="text-align: center; width: 100%; margin: 15px 0; color: var(--secondary);">Select Your Package</h4>
+                <div class="package-card" data-amount="15" data-package="week">
+                    <div class="package-name">1 Week</div>
+                    <div class="package-price">$15</div>
+                </div>
+                <div class="package-card" data-amount="20" data-package="2weeks">
+                    <div class="package-name">2 Weeks</div>
+                    <div class="package-price">$20</div>
+                </div>
+                <div class="package-card" data-amount="40" data-package="month">
+                    <div class="package-name">1 Month</div>
+                    <div class="package-price">$40</div>
+                </div>
+                
+                <div class="account-info">
+                    <h4>Account Details</h4>
+                    <p>Name: <strong>Tinashe Matongorere</strong></p>
+                    <p>Mobile: <strong>0782637207</strong></p>
+                </div>
+                
+                <div class="payment-instructions" id="innbucksInstructions">
+                    <h4 style="text-align: center; width: 100%; margin: 15px 0; color: var(--secondary);">Payment Instructions</h4>
+                    <ul class="instructions-list">
+                        <li>Send payment to mobile number: 0782637207</li>
+                        <li>Use your selected package amount</li>
+                        <li>Send payment confirmation screenshot to WhatsApp</li>
+                        <li>Your token will be sent within 24 hours</li>
+                    </ul>
+                    
+                    <a href="https://wa.me/263782637207" class="whatsapp-btn" style="width: 100%; margin-top: 20px;" target="_blank">
+                        <i class="fab fa-whatsapp"></i> Chat with Admin After Payment
+                    </a>
+                </div>
+                
+                <button class="back-btn" id="backFromInnbucks">
+                    <i class="fas fa-arrow-left"></i> Back to Payment Methods
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="session-expired hidden" id="sessionExpired">
+        <h3><i class="fas fa-lock"></i> Session Expired</h3>
+        <p>Your session has expired for security reasons. Please enter the token again to continue.</p>
+        <button class="btn" id="renewSessionBtn" style="background: rgba(255, 152, 0, 0.2); color: var(--secondary); border: 1px solid rgba(255, 152, 0, 0.3); padding: 8px 20px; border-radius: 5px; margin-top: 10px;">
+            <i class="fas fa-redo"></i> Enter Token Again
+        </button>
+    </div>
+    
+    <div class="signals-container hidden" id="signalsContainer">
+        <div class="signals-header">
+            <h1><i class="fas fa-bolt"></i> <span class="glow-text">Live Trading Signals</span></h1>
+            <button class="refresh-btn" id="refreshBtn">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+        </div>
+        
+        <div style="margin-bottom: 20px; padding: 15px; background: rgba(12, 27, 51, 0.7); border-radius: 10px;">
+            <h3 style="margin-bottom: 10px; color: var(--secondary);">Available Trading Pairs</h3>
+            <div class="trading-pairs">
+                <span class="pair-badge">Boom 1000</span>
+                <span class="pair-badge">Crash 600</span>
+                <span class="pair-badge">Boom 500</span>
+                <span class="pair-badge">Crash 500</span>
+                <span class="pair-badge">Crash 1000</span>
+                <span class="pair-badge">Boom 900</span>
+                <span class="pair-badge">Boom 600</span>
+                <span class="pair-badge">Crash 300</span>
+                <span class="pair-badge">GainX 1200</span>
+                <span class="pair-badge">GainX 400</span>
+                <span class="pair-badge">GainX 600</span>
+                <span class="pair-badge">GainX 800</span>
+                <span class="pair-badge">GainX 999</span>
+                <span class="pair-badge">PainX 1200</span>
+                <span class="pair-badge">PainX 400</span>
+                <span class="pair-badge">PainX 600</span>
+                <span class="pair-badge">PainX 800</span>
+            </div>
+        </div>
+        
+        <table id="signalsTable">
+            <thead>
+                <tr>
+                    <th>PAIR</th>
+                    <th>STATUS</th>
+                    <th>TP</th>
+                    <th>SL</th>
+                    <th>ACTION</th>
+                    <th>TIME</th>
+                </tr>
+            </thead>
+            <tbody id="signalsBody">
+                <!-- Signals will be loaded here -->
+            </tbody>
+        </table>
+        
+        <div class="instructions">
+            <h3><i class="fas fa-info-circle"></i> How to Use These Signals:</h3>
+            <ul>
+                <li><strong>PAIR:</strong> The trading instrument you should trade</li>
+                <li><strong>STATUS:</strong> Whether the signal is active (Open) or completed (Closed)</li>
+                <li><strong>TP:</strong> Take Profit level - where to exit for profit</li>
+                <li><strong>SL:</strong> Stop Loss level - where to exit to limit losses</li>
+                <li><strong>ACTION:</strong> Buy or Sell - the direction to trade</li>
+                <li>Always follow risk management principles and never risk more than you can afford to lose</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="watermark">
+        <p>© 2023 TraderX Signals - All rights reserved</p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Create particles for background effect
+            createParticles();
+            
+            const tokenSection = document.getElementById('tokenSection');
+            const signalsContainer = document.getElementById('signalsContainer');
+            const sessionExpired = document.getElementById('sessionExpired');
+            const tokenInput = document.getElementById('tokenInput');
+            const tokenSubmit = document.getElementById('tokenSubmit');
+            const refreshBtn = document.getElementById('refreshBtn');
+            const signalsBody = document.getElementById('signalsBody');
+            const renewSessionBtn = document.getElementById('renewSessionBtn');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            // Payment elements
+            const ecocashCard = document.getElementById('ecocashCard');
+            const innbucksCard = document.getElementById('innbucksCard');
+            const ecocashPackages = document.getElementById('ecocashPackages');
+            const innbucksPackages = document.getElementById('innbucksPackages');
+            const ecocashUssd = document.getElementById('ecocashUssd');
+            const ecocashCode = document.getElementById('ecocashCode');
+            const copyEcoCash = document.getElementById('copyEcoCash');
+            const backFromEcoCash = document.getElementById('backFromEcoCash');
+            const backFromInnbucks = document.getElementById('backFromInnbucks');
+            const packageCards = document.querySelectorAll('.package-card');
+            
+            // Always show token section on page load
+            showTokenSection();
+            
+            // Generate random particles for background
+            function createParticles() {
+                const particles = document.getElementById('particles');
+                const particleCount = 30;
+                
+                for (let i = 0; i < particleCount; i++) {
+                    const particle = document.createElement('div');
+                    particle.classList.add('particle');
+                    
+                    // Random size
+                    const size = Math.random() * 5 + 2;
+                    particle.style.width = `${size}px`;
+                    particle.style.height = `${size}px`;
+                    
+                    // Random position
+                    particle.style.left = `${Math.random() * 100}%`;
+                    particle.style.top = `${Math.random() * 100}%`;
+                    
+                    // Random color (golden/orange hues)
+                    const hue = 30 + Math.random() * 10;
+                    particle.style.backgroundColor = `hsl(${hue}, 100%, 70%)`;
+                    
+                    // Random animation duration
+                    const duration = 10 + Math.random() * 20;
+                    particle.style.animationDuration = `${duration}s`;
+                    
+                    particles.appendChild(particle);
+                }
+            }
+            
+            function showTokenSection() {
+                tokenSection.classList.remove('hidden');
+                sessionExpired.classList.add('hidden');
+                signalsContainer.classList.add('hidden');
+                tokenInput.value = '';
+                errorMessage.style.display = 'none';
+            }
+            
+            function showSignals() {
+                tokenSection.classList.add('hidden');
+                sessionExpired.classList.add('hidden');
+                signalsContainer.classList.remove('hidden');
+                loadSignals();
+            }
+            
+            function showSessionExpired() {
+                tokenSection.classList.add('hidden');
+                sessionExpired.classList.remove('hidden');
+                signalsContainer.classList.add('hidden');
+            }
+            
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.style.display = 'block';
+                
+                // Hide error after 5 seconds
+                setTimeout(() => {
+                    errorMessage.style.display = 'none';
+                }, 5000);
+            }
+            
+            tokenSubmit.addEventListener('click', function() {
+                const token = tokenInput.value.trim();
+                const storedToken = localStorage.getItem('signalsToken') || '12345';
+                
+                if (token === storedToken) {
+                    // Store token with timestamp for session management
+                    localStorage.setItem('currentToken', token);
+                    localStorage.setItem('tokenTimestamp', Date.now());
+                    
+                    // Record user login (for admin panel)
+                    recordUserLogin();
+                    
+                    // Show signals
+                    showSignals();
+                } else {
+                    showError('Wrong token ID! Contact us for a valid token.');
+                    tokenInput.value = '';
+                    tokenInput.focus();
+                }
+            });
+            
+            tokenInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    tokenSubmit.click();
+                }
+            });
+            
+            renewSessionBtn.addEventListener('click', function() {
+                showTokenSection();
+            });
+            
+            refreshBtn.addEventListener('click', function() {
+                // Check if token has expired
+                if (!checkTokenValidity()) {
+                    showSessionExpired();
+                    return;
+                }
+                
+                loadSignals();
+                this.innerHTML = '<i class="fas fa-sync-alt"></i> Refreshed!';
+                setTimeout(() => {
+                    refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
+                }, 2000);
+            });
+            
+            function loadSignals() {
+                // Verify token is still valid before loading signals
+                if (!checkTokenValidity()) {
+                    showSessionExpired();
+                    return;
+                }
+                
+                const signals = JSON.parse(localStorage.getItem('tradingSignals') || '[]');
+                signalsBody.innerHTML = '';
+                
+                if (signals.length === 0) {
+                    signalsBody.innerHTML = `
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 30px;">
+                                No signals available at the moment. Check back soon or contact admin.
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                signals.forEach(signal => {
+                    const row = document.createElement('tr');
+                    row.classList.add('signal-animation');
+                    row.innerHTML = `
+                        <td>${signal.pair}</td>
+                        <td><span class="status ${signal.status === 'OPEN' ? 'status-open' : 'status-closed'}">${signal.status}</span></td>
+                        <td>${signal.tp}</td>
+                        <td>${signal.sl}</td>
+                        <td class="action-${signal.action.toLowerCase()}">${signal.action}</td>
+                        <td><span class="timestamp">${signal.timestamp}</span></td>
+                    `;
+                    signalsBody.appendChild(row);
+                });
+            }
+            
+            // Payment methods handling
+            ecocashCard.addEventListener('click', function() {
+                ecocashPackages.style.display = 'grid';
+                innbucksPackages.style.display = 'none';
+                tokenSection.style.maxHeight = '1200px';
+                tokenSection.style.overflow = 'visible';
+            });
+            
+            innbucksCard.addEventListener('click', function() {
+                innbucksPackages.style.display = 'grid';
+                ecocashPackages.style.display = 'none';
+                tokenSection.style.maxHeight = '1200px';
+                tokenSection.style.overflow = 'visible';
+            });
+            
+            backFromEcoCash.addEventListener('click', function() {
+                ecocashPackages.style.display = 'none';
+                tokenSection.style.maxHeight = '600px';
+            });
+            
+            backFromInnbucks.addEventListener('click', function() {
+                innbucksPackages.style.display = 'none';
+                tokenSection.style.maxHeight = '600px';
+            });
+            
+            // Package selection
+            packageCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const amount = this.getAttribute('data-amount');
+                    const packageName = this.getAttribute('data-package');
+                    
+                    // For EcoCash
+                    if (this.closest('#ecocashPackages')) {
+                        ecocashCode.textContent = `*153*1*1*0778652739*${amount}#`;
+                        ecocashUssd.style.display = 'block';
+                        
+                        // Update WhatsApp message
+                        const whatsappLink = document.querySelector('#ecocashInstructions .whatsapp-btn');
+                        whatsappLink.href = `https://wa.me/263778652739?text=Hello%20TraderX%2C%20I%20have%20paid%20for%20${packageName}%20package%20(%24${amount})%20via%20EcoCash.%20Please%20provide%20my%20token.`;
+                        
+                        document.getElementById('ecocashInstructions').style.display = 'block';
+                    }
+                });
+            });
+            
+            // Copy USSD code
+            copyEcoCash.addEventListener('click', function() {
+                const code = ecocashCode.textContent;
+                navigator.clipboard.writeText(code).then(() => {
+                    this.textContent = 'Copied!';
+                    setTimeout(() => {
+                        this.textContent = 'Copy Code';
+                    }, 2000);
+                });
+            });
+            
+            function checkTokenValidity() {
+                const token = localStorage.getItem('currentToken');
+                const currentToken = localStorage.getItem('signalsToken') || '12345';
+                const tokenTimestamp = localStorage.getItem('tokenTimestamp');
+                
+                // If no token or token expired (5 minutes timeout), show token section
+                if (!token || !tokenTimestamp || (Date.now() - tokenTimestamp > 300000)) {
+                    return false;
+                }
+                
+                // Verify token matches current admin token
+                const storedToken = localStorage.getItem('signalsToken') || '12345';
+                if (token !== storedToken) {
+                    return false;
+                }
+                
+                return true;
+            }
+            
+            // Record user login for admin tracking
+            function recordUserLogin() {
+                const userId = localStorage.getItem('traderxUserId');
+                let users = JSON.parse(localStorage.getItem('traderxUsers') || '[]');
+                
+                // Generate new user ID if not exists
+                if (!userId) {
+                    const newUserCount = users.length + 1;
+                    const newUserId = `user${newUserCount}`;
+                    
+                    localStorage.setItem('traderxUserId', newUserId);
+                    
+                    // Add new user
+                    users.push({
+                        id: newUserId,
+                        name: `User ${newUserCount}`,
+                        loginTime: new Date().toISOString(),
+                        lastActive: new Date().toISOString(),
+                        online: true
+                    });
+                } else {
+                    // Update existing user
+                    const userIndex = users.findIndex(u => u.id === userId);
+                    if (userIndex !== -1) {
+                        users[userIndex].lastActive = new Date().toISOString();
+                        users[userIndex].online = true;
+                    } else {
+                        // User not found in list (token changed), create new entry
+                        const newUserCount = users.length + 1;
+                        users.push({
+                            id: userId,
+                            name: `User ${newUserCount}`,
+                            loginTime: new Date().toISOString(),
+                            lastActive: new Date().toISOString(),
+                            online: true
+                        });
+                    }
+                }
+                
+                localStorage.setItem('traderxUsers', JSON.stringify(users));
+            }
+            
+            // Listen for storage changes (when admin updates signals)
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'tradingSignals' && !signalsContainer.classList.contains('hidden')) {
+                    loadSignals();
+                }
+                
+                // If token changes, force re-entry
+                if (e.key === 'signalsToken' && !tokenSection.classList.contains('hidden')) {
+                    showError('Token has been updated by admin. Please enter the new token.');
+                    showTokenSection();
+                }
+            });
+            
+            // Check for session expiration periodically
+            setInterval(function() {
+                if (!tokenSection.classList.contains('hidden') && !sessionExpired.classList.contains('hidden')) {
+                    return; // Already showing token section
+                }
+                
+                if (!checkTokenValidity()) {
+                    showSessionExpired();
+                }
+            }, 30000); // Check every 30 seconds
+            
+            // Handle page visibility changes (when user switches tabs)
+            document.addEventListener('visibilitychange', function() {
+                if (document.visibilityState === 'hidden') {
+                    // Store timestamp when user leaves the page
+                    localStorage.setItem('lastVisible', Date.now());
+                } else if (document.visibilityState === 'visible') {
+                    // Check if user was away for more than 5 minutes
+                    const lastVisible = localStorage.getItem('lastVisible');
+                    if (lastVisible && (Date.now() - lastVisible > 300000)) {
+                        showSessionExpired();
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
