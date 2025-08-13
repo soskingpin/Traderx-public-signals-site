@@ -369,6 +369,7 @@
             padding: 25px;
             max-width: 1200px;
             margin: 0 auto;
+            display: none;
         }
         
         .signals-header {
@@ -537,6 +538,7 @@
             max-width: 600px;
             backdrop-filter: blur(5px);
             border: 1px solid rgba(255, 152, 0, 0.1);
+            display: none;
         }
         
         .session-expired h3 {
@@ -751,7 +753,7 @@
         </div>
     </div>
     
-    <div class="session-expired hidden" id="sessionExpired">
+    <div class="session-expired" id="sessionExpired">
         <h3><i class="fas fa-lock"></i> Access Revoked</h3>
         <p>Your access has been revoked by the admin. Please contact support for assistance.</p>
         <button class="btn" id="renewSessionBtn" style="background: rgba(255, 152, 0, 0.2); color: var(--secondary); border: 1px solid rgba(255, 152, 0, 0.3); padding: 8px 20px; border-radius: 5px; margin-top: 10px;">
@@ -759,7 +761,7 @@
         </button>
     </div>
     
-    <div class="signals-container hidden" id="signalsContainer">
+    <div class="signals-container" id="signalsContainer">
         <div class="signals-header">
             <h1><i class="fas fa-bolt"></i> <span class="glow-text">Live Trading Signals</span></h1>
             <button class="refresh-btn" id="refreshBtn">
@@ -869,154 +871,162 @@
             const backFromInnbucks = document.getElementById('backFromInnbucks');
             const packageCards = document.querySelectorAll('.package-card');
             
-            // Initialize system
-            initSystem();
-            
-            function initSystem() {
-                // Always show token section on page load
-                showTokenSection();
-                
-                // Set up UI interactions
-                setupUIInteractions();
-            }
-            
-            function setupUIInteractions() {
-                tokenSubmit.addEventListener('click', function() {
-                    const userName = userNameInput.value.trim();
-                    const userId = userIdInput.value.trim();
-                    
-                    if (!userName || !userId) {
-                        showError('Please enter both name and ID number');
-                        return;
-                    }
-                    
-                    // Check user in Firestore
-                    db.collection('users').doc(userId).get()
-                        .then(doc => {
-                            if (doc.exists) {
-                                const userData = doc.data();
-                                
-                                // Case-insensitive comparison with trimmed values
-                                if (userData.name.toLowerCase().trim() === userName.toLowerCase().trim() && 
-                                    userData.active !== false) {
-                                    // Store user ID for session
-                                    localStorage.setItem('traderxUserId', userId);
-                                    localStorage.setItem('traderxUserName', userName);
-                                    
-                                    // Show signals
-                                    showSignals();
-                                } else if (userData.active === false) {
-                                    showError('Your access has been revoked. Please contact admin.');
-                                } else {
-                                    showError('Name mismatch. Please check your details.');
-                                }
-                            } else {
-                                showError('Invalid name or ID number! Please check your details.');
-                            }
-                        })
-                        .catch(error => {
-                            console.error("Error checking user:", error);
-                            showError('Error connecting to server. Please try again.');
-                        });
-                });
-                
-                userNameInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter' && userIdInput.value.trim()) {
-                        tokenSubmit.click();
-                    }
-                });
-                
-                userIdInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter' && userNameInput.value.trim()) {
-                        tokenSubmit.click();
-                    }
-                });
-                
-                renewSessionBtn.addEventListener('click', function() {
-                    showTokenSection();
-                });
-                
-                refreshBtn.addEventListener('click', function() {
-                    // Check if user still has access
-                    const userId = localStorage.getItem('traderxUserId');
-                    if (!userId) {
-                        showTokenSection();
-                        return;
-                    }
-                    
-                    db.collection('users').doc(userId).get()
-                        .then(doc => {
-                            if (doc.exists && doc.data().active !== false) {
-                                loadSignals();
-                                this.innerHTML = '<i class="fas fa-sync-alt"></i> Refreshed!';
-                                setTimeout(() => {
-                                    refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
-                                }, 2000);
-                            } else {
-                                showError('Your access has been revoked. Please contact admin.');
-                                showTokenSection();
-                            }
-                        })
-                        .catch(error => {
-                            console.error("Error verifying user:", error);
-                            showError('Error connecting to server. Please try again.');
-                        });
-                });
-                
-                // Payment methods handling
-                ecocashCard.addEventListener('click', function() {
-                    ecocashPackages.style.display = 'grid';
-                    innbucksPackages.style.display = 'none';
-                    tokenSection.style.maxHeight = '1200px';
-                    tokenSection.style.overflow = 'visible';
-                });
-                
-                innbucksCard.addEventListener('click', function() {
-                    innbucksPackages.style.display = 'grid';
-                    ecocashPackages.style.display = 'none';
-                    tokenSection.style.maxHeight = '1200px';
-                    tokenSection.style.overflow = 'visible';
-                });
-                
-                backFromEcoCash.addEventListener('click', function() {
-                    ecocashPackages.style.display = 'none';
-                    tokenSection.style.maxHeight = '600px';
-                });
-                
-                backFromInnbucks.addEventListener('click', function() {
-                    innbucksPackages.style.display = 'none';
-                    tokenSection.style.maxHeight = '600px';
-                });
-                
-                // Package selection
-                packageCards.forEach(card => {
-                    card.addEventListener('click', function() {
-                        const amount = this.getAttribute('data-amount');
-                        const packageName = this.getAttribute('data-package');
-                        
-                        // For EcoCash
-                        if (this.closest('#ecocashPackages')) {
-                            ecocashCode.textContent = `*153*1*1*0778652739*${amount}#`;
-                            ecocashUssd.style.display = 'block';
-                            
-                            // Update WhatsApp message
-                            const whatsappLink = document.querySelector('#ecocashInstructions .whatsapp-btn');
-                            whatsappLink.href = `https://wa.me/263778652739?text=Hello%20TraderX%2C%20I%20have%20paid%20for%20${packageName}%20package%20(%24${amount})%20via%20EcoCash.%20Please%20grant%20me%20access%20to%20the%20signals.`
+            // Check if user has active session
+            const userId = localStorage.getItem('traderxUserId');
+            if (userId) {
+                // Verify session is still valid
+                db.collection('users').doc(userId).get()
+                    .then(doc => {
+                        if (doc.exists && doc.data().active !== false) {
+                            showSignals();
+                            loadSignals();
+                        } else {
+                            showTokenSection();
                         }
+                    })
+                    .catch(() => {
+                        showTokenSection();
                     });
-                });
-                
-                // Copy USSD code
-                copyEcoCash.addEventListener('click', function() {
-                    const code = ecocashCode.textContent;
-                    navigator.clipboard.writeText(code).then(() => {
-                        this.textContent = 'Copied!';
-                        setTimeout(() => {
-                            this.textContent = 'Copy Code';
-                        }, 2000);
-                    });
-                });
+            } else {
+                showTokenSection();
             }
+            
+            tokenSubmit.addEventListener('click', function() {
+                const userName = userNameInput.value.trim();
+                const userId = userIdInput.value.trim();
+                
+                if (!userName || !userId) {
+                    showError('Please enter both name and ID number');
+                    return;
+                }
+                
+                // Check user in Firestore
+                db.collection('users').doc(userId).get()
+                    .then(doc => {
+                        if (doc.exists) {
+                            const userData = doc.data();
+                            
+                            // Case-insensitive comparison with trimmed values
+                            if (userData.name.toLowerCase().trim() === userName.toLowerCase().trim() && 
+                                userData.active !== false) {
+                                // Store user ID for session
+                                localStorage.setItem('traderxUserId', userId);
+                                localStorage.setItem('traderxUserName', userName);
+                                
+                                // Show signals
+                                showSignals();
+                                loadSignals();
+                            } else if (userData.active === false) {
+                                showError('Your access has been revoked. Please contact admin.');
+                            } else {
+                                showError('Name mismatch. Please check your details.');
+                            }
+                        } else {
+                            showError('Invalid name or ID number! Please check your details.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error checking user:", error);
+                        showError('Error connecting to server. Please try again.');
+                    });
+            });
+            
+            userNameInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && userIdInput.value.trim()) {
+                    tokenSubmit.click();
+                }
+            });
+            
+            userIdInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && userNameInput.value.trim()) {
+                    tokenSubmit.click();
+                }
+            });
+            
+            renewSessionBtn.addEventListener('click', function() {
+                showTokenSection();
+            });
+            
+            refreshBtn.addEventListener('click', function() {
+                // Check if user still has access
+                const userId = localStorage.getItem('traderxUserId');
+                if (!userId) {
+                    showTokenSection();
+                    return;
+                }
+                
+                db.collection('users').doc(userId).get()
+                    .then(doc => {
+                        if (doc.exists && doc.data().active !== false) {
+                            loadSignals();
+                            this.innerHTML = '<i class="fas fa-sync-alt"></i> Refreshed!';
+                            setTimeout(() => {
+                                refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
+                            }, 2000);
+                        } else {
+                            showError('Your access has been revoked. Please contact admin.');
+                            showTokenSection();
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error verifying user:", error);
+                        showError('Error connecting to server. Please try again.');
+                    });
+            });
+            
+            // Payment methods handling
+            ecocashCard.addEventListener('click', function() {
+                ecocashPackages.style.display = 'grid';
+                innbucksPackages.style.display = 'none';
+                document.querySelector('.payment-options').style.maxHeight = '1200px';
+                document.querySelector('.payment-options').style.overflow = 'visible';
+            });
+            
+            innbucksCard.addEventListener('click', function() {
+                innbucksPackages.style.display = 'grid';
+                ecocashPackages.style.display = 'none';
+                document.querySelector('.payment-options').style.maxHeight = '1200px';
+                document.querySelector('.payment-options').style.overflow = 'visible';
+            });
+            
+            backFromEcoCash.addEventListener('click', function() {
+                ecocashPackages.style.display = 'none';
+                document.querySelector('.payment-options').style.maxHeight = '600px';
+            });
+            
+            backFromInnbucks.addEventListener('click', function() {
+                innbucksPackages.style.display = 'none';
+                document.querySelector('.payment-options').style.maxHeight = '600px';
+            });
+            
+            // Package selection
+            packageCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const amount = this.getAttribute('data-amount');
+                    const packageName = this.getAttribute('data-package');
+                    
+                    // For EcoCash
+                    if (this.closest('#ecocashPackages')) {
+                        ecocashCode.textContent = `*153*1*1*0778652739*${amount}#`;
+                        ecocashUssd.style.display = 'block';
+                        
+                        // Update WhatsApp message
+                        const whatsappLink = document.querySelector('#ecocashInstructions .whatsapp-btn');
+                        whatsappLink.href = `https://wa.me/263778652739?text=Hello%20TraderX%2C%20I%20have%20paid%20for%20${packageName}%20package%20(%24${amount})%20via%20EcoCash.%20Please%20grant%20me%20access%20to%20the%20signals.`
+                    }
+                });
+            });
+            
+            // Copy USSD code
+            copyEcoCash.addEventListener('click', function() {
+                const code = ecocashCode.textContent;
+                navigator.clipboard.writeText(code).then(() => {
+                    this.textContent = 'Copied!';
+                    setTimeout(() => {
+                        this.textContent = 'Copy Code';
+                    }, 2000);
+                });
+            });
             
             function createParticles() {
                 const particles = document.getElementById('particles');
@@ -1048,25 +1058,24 @@
             }
             
             function showTokenSection() {
-                tokenSection.classList.remove('hidden');
-                sessionExpired.classList.add('hidden');
-                signalsContainer.classList.add('hidden');
+                tokenSection.style.display = 'block';
+                sessionExpired.style.display = 'none';
+                signalsContainer.style.display = 'none';
                 userNameInput.value = '';
                 userIdInput.value = '';
                 errorMessage.style.display = 'none';
             }
             
             function showSignals() {
-                tokenSection.classList.add('hidden');
-                sessionExpired.classList.add('hidden');
-                signalsContainer.classList.remove('hidden');
-                loadSignals();
+                tokenSection.style.display = 'none';
+                sessionExpired.style.display = 'none';
+                signalsContainer.style.display = 'block';
             }
             
             function showSessionExpired() {
-                tokenSection.classList.add('hidden');
-                sessionExpired.classList.remove('hidden');
-                signalsContainer.classList.add('hidden');
+                tokenSection.style.display = 'none';
+                sessionExpired.style.display = 'block';
+                signalsContainer.style.display = 'none';
             }
             
             function showError(message) {
